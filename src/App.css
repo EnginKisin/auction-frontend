@@ -1,0 +1,130 @@
+.card, .auction-item {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover, .auction-item:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+  transform: translateY(-2px);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.nav-link {
+  color: var(--color-silver);
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--color-accent);
+}
+
+.nav-link.active {
+  color: var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.status-active {
+  color: var(--color-success);
+}
+
+.status-inactive {
+  color: var(--color-error);
+}
+
+.status-pending {
+  color: var(--color-warning);
+}
+
+.price {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.price-label {
+  color: var(--color-silver);
+  font-size: 0.9em;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-primary);
+  border: 1px solid var(--color-accent);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+}
+
+.btn-secondary:hover {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: white;
+  border: 1px solid var(--color-error);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.modal-overlay {
+  background: rgba(26, 26, 26, 0.8);
+}
+
+.modal-content {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.toast {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.toast.success {
+  border-left: 4px solid var(--color-success);
+}
+
+.toast.error {
+  border-left: 4px solid var(--color-error);
+}
+
+.toast.warning {
+  border-left: 4px solid var(--color-warning);
+}
+
+.loading {
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .card, .auction-item {
+    margin: 10px 0;
+  }
+  
+  .btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

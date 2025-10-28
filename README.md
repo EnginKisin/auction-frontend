@@ -1,1 +1,1 @@
-# auction-frontend
+🧩 Auction Frontend
