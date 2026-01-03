@@ -193,11 +193,26 @@ export default function ProductModal({
           setUploading(false)
         }
       } else {
-        await createProduct({
+        const createResponse = await createProduct({
           ...sanitizedData,
           price: priceNum
         })
         success('Ürün başarıyla oluşturuldu')
+        
+        const newProductId = createResponse.data?.id
+        if (newProductId && images.length > 0) {
+          setUploading(true)
+          try {
+            success('Görseller yükleniyor...')
+            await uploadProductImages(newProductId, images)
+            success('Görseller başarıyla yüklendi')
+          } catch (err) {
+            console.error('Görsel yükleme hatası:', err)
+            error('Görseller yüklenirken hata oluştu: ' + (err?.message || 'Bilinmeyen hata'))
+          } finally {
+            setUploading(false)
+          }
+        }
       }
 
       onSuccess()
@@ -324,183 +339,183 @@ export default function ProductModal({
             )}
           </div>
 
-        {isEditMode && (
-          <div style={{ display: 'grid', gap: 8 }}>
-            <label style={{ fontWeight: '600', color: 'var(--color-accent)' }}>Görseller</label>
-            
-             {existingImages.length > 0 && (
-               <div style={{ display: 'grid', gap: 8 }}>
-                 <div style={{ fontSize: '0.9em', color: 'var(--color-text-secondary)' }}>Mevcut Görseller ({existingImages.length}):</div>
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
-                   {existingImages.filter(img => img && typeof img === 'object').map((img, index) => {
-                     const imageSrc = img.contentType && img.base64Data 
-                       ? `data:${img.contentType};base64,${img.base64Data}`
-                       : img.url || img.imageUrl || img.src || img.path || img
-                     return (
-                       <div key={img.id || `img-${index}`} style={{ position: 'relative' }}>
-                         <img
-                           src={imageSrc}
-                           alt="Ürün görseli"
-                           style={{
-                             width: '100%',
-                             height: 80,
-                             objectFit: 'cover',
-                             borderRadius: 4
-                           }}
-                           onError={(e) => {
-                             console.error('Image failed to load:', imageSrc)
-                             e.target.style.display = 'none'
-                           }}
-                         />
-                                                  {img.id && (
-                           <button
-                             onClick={() => removeExistingImage(img.id)}
-                             disabled={loading || uploading}
-                             style={{
-                               position: 'absolute',
-                               top: -8,
-                               right: -8,
-                               background: 'var(--color-error)',
-                               color: 'white',
-                               border: '2px solid var(--color-secondary)',
-                               borderRadius: '50%',
-                               width: 24,
-                               height: 24,
-                               fontSize: '16px',
-                               fontWeight: 'bold',
-                               cursor: 'pointer',
-                               display: 'flex',
-                               alignItems: 'center',
-                               justifyContent: 'center',
-                               boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                               lineHeight: 1
-                             }}
-                           >
-                             ×
-                           </button>
-                         )}
-                       </div>
-                     )
-                   })}
-                 </div>
-               </div>
-             )}
-             
-             {imagesToDelete.length > 0 && (
-               <div style={{ display: 'grid', gap: 8 }}>
-                 <div style={{ fontSize: '0.9em', color: 'var(--color-error)' }}>Silinecek Görseller ({imagesToDelete.length}):</div>
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
-                   {imagesToDelete.map((imageId, index) => {
-                     const imageToDelete = product.images?.find(img => img.id === imageId) || 
-                                        product.imageUrls?.find(img => img.id === imageId) || 
-                                        product.photos?.find(img => img.id === imageId)
-                     
-                     if (!imageToDelete) return null
-                     
-                     const imageSrc = imageToDelete.contentType && imageToDelete.base64Data 
-                       ? `data:${imageToDelete.contentType};base64,${imageToDelete.base64Data}`
-                       : imageToDelete.url || imageToDelete.imageUrl || imageToDelete.src || imageToDelete.path
-                     
-                     return (
-                       <div key={`delete-${imageId}`} style={{ position: 'relative', opacity: 0.6 }}>
-                         <img
-                           src={imageSrc}
-                           alt="Silinecek görsel"
-                           style={{
-                             width: '100%',
-                             height: 80,
-                             objectFit: 'cover',
-                             borderRadius: 4,
-                             filter: 'grayscale(50%)'
-                           }}
-                         />
-                         <div style={{
-                           position: 'absolute',
-                           top: '50%',
-                           left: '50%',
-                           transform: 'translate(-50%, -50%)',
-                           background: 'var(--color-error)',
-                           color: 'white',
-                           padding: '4px 8px',
-                           borderRadius: 4,
-                           fontSize: '12px',
-                           fontWeight: 'bold'
-                         }}>
-                           SİLİNECEK
-                         </div>
-                       </div>
-                     )
-                   })}
-                 </div>
-               </div>
-             )}
-            
+        <div style={{ display: 'grid', gap: 8 }}>
+          <label style={{ fontWeight: '600', color: 'var(--color-accent)' }}>Görseller</label>
+          
+          {isEditMode && existingImages.length > 0 && (
             <div style={{ display: 'grid', gap: 8 }}>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                disabled={loading || uploading}
-                style={{
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 8,
-                  fontSize: '14px',
-                  background: 'var(--color-secondary)',
-                  color: 'var(--color-text)'
-                }}
-              />
-              
-              {images.length > 0 && (
-                <div style={{ display: 'grid', gap: 8 }}>
-                  <div style={{ fontSize: '0.9em', color: 'var(--color-text-secondary)' }}>Yeni Eklenecek Görseller:</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
-                    {images.map((file, index) => (
-                      <div key={index} style={{ position: 'relative' }}>
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Yeni görsel ${index + 1}`}
+              <div style={{ fontSize: '0.9em', color: 'var(--color-text-secondary)' }}>Mevcut Görseller ({existingImages.length}):</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
+                {existingImages.filter(img => img && typeof img === 'object').map((img, index) => {
+                  const imageSrc = img.contentType && img.base64Data 
+                    ? `data:${img.contentType};base64,${img.base64Data}`
+                    : img.url || img.imageUrl || img.src || img.path || img
+                  return (
+                    <div key={img.id || `img-${index}`} style={{ position: 'relative' }}>
+                      <img
+                        src={imageSrc}
+                        alt="Ürün görseli"
+                        style={{
+                          width: '100%',
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 4
+                        }}
+                        onError={(e) => {
+                          console.error('Image failed to load:', imageSrc)
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                      {img.id && (
+                        <button
+                          onClick={() => removeExistingImage(img.id)}
+                          disabled={loading || uploading}
                           style={{
-                            width: '100%',
-                            height: 80,
-                            objectFit: 'cover',
-                            borderRadius: 4
+                            position: 'absolute',
+                            top: -8,
+                            right: -8,
+                            background: 'var(--color-error)',
+                            color: 'white',
+                            border: '2px solid var(--color-secondary)',
+                            borderRadius: '50%',
+                            width: 24,
+                            height: 24,
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                            lineHeight: 1
                           }}
-                        />
-                                                 <button
-                           onClick={() => removeNewImage(index)}
-                           disabled={loading || uploading}
-                           style={{
-                             position: 'absolute',
-                             top: -8,
-                             right: -8,
-                             background: 'var(--color-error)',
-                             color: 'white',
-                             border: '2px solid var(--color-secondary)',
-                             borderRadius: '50%',
-                             width: 24,
-                             height: 24,
-                             fontSize: '16px',
-                             fontWeight: 'bold',
-                             cursor: 'pointer',
-                             display: 'flex',
-                             alignItems: 'center',
-                             justifyContent: 'center',
-                             boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                             lineHeight: 1
-                           }}
-                         >
-                           ×
-                         </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
+          )}
+          
+          {isEditMode && imagesToDelete.length > 0 && (
+            <div style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontSize: '0.9em', color: 'var(--color-error)' }}>Silinecek Görseller ({imagesToDelete.length}):</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
+                {imagesToDelete.map((imageId, index) => {
+                  const imageToDelete = product.images?.find(img => img.id === imageId) || 
+                                     product.imageUrls?.find(img => img.id === imageId) || 
+                                     product.photos?.find(img => img.id === imageId)
+                  
+                  if (!imageToDelete) return null
+                  
+                  const imageSrc = imageToDelete.contentType && imageToDelete.base64Data 
+                    ? `data:${imageToDelete.contentType};base64,${imageToDelete.base64Data}`
+                    : imageToDelete.url || imageToDelete.imageUrl || imageToDelete.src || imageToDelete.path
+                  
+                  return (
+                    <div key={`delete-${imageId}`} style={{ position: 'relative', opacity: 0.6 }}>
+                      <img
+                        src={imageSrc}
+                        alt="Silinecek görsel"
+                        style={{
+                          width: '100%',
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 4,
+                          filter: 'grayscale(50%)'
+                        }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        background: 'var(--color-error)',
+                        color: 'white',
+                        padding: '4px 8px',
+                        borderRadius: 4,
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}>
+                        SİLİNECEK
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+         
+          <div style={{ display: 'grid', gap: 8 }}>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={loading || uploading}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid var(--color-border)',
+                borderRadius: 8,
+                fontSize: '14px',
+                background: 'var(--color-secondary)',
+                color: 'var(--color-text)'
+              }}
+            />
+            
+            {images.length > 0 && (
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div style={{ fontSize: '0.9em', color: 'var(--color-text-secondary)' }}>
+                  {isEditMode ? 'Yeni Eklenecek Görseller:' : 'Eklenecek Görseller:'} ({images.length})
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: 8 }}>
+                  {images.map((file, index) => (
+                    <div key={index} style={{ position: 'relative' }}>
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Yeni görsel ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 4
+                        }}
+                      />
+                      <button
+                        onClick={() => removeNewImage(index)}
+                        disabled={loading || uploading}
+                        style={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          background: 'var(--color-error)',
+                          color: 'white',
+                          border: '2px solid var(--color-secondary)',
+                          borderRadius: '50%',
+                          width: 24,
+                          height: 24,
+                          fontSize: '16px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          lineHeight: 1
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 24 }}>
           <button
@@ -517,7 +532,7 @@ export default function ProductModal({
             className="btn btn-primary"
             style={{ padding: '12px 24px' }}
           >
-                         {loading ? 'Ürün Kaydediliyor...' : (isEditMode && uploading) ? 'Görsel İşlemleri Yapılıyor...' : (isEditMode ? 'Güncelle' : 'Kaydet')}
+                         {loading ? 'Ürün Kaydediliyor...' : uploading ? 'Görsel İşlemleri Yapılıyor...' : (isEditMode ? 'Güncelle' : 'Kaydet')}
           </button>
         </div>
       </div>
