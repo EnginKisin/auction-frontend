@@ -12,7 +12,7 @@ Bu proje, [auction-backend](https://github.com/EnginKisin/auction-backend) repos
 
 ### 🏠 Ana Sayfa
 - Aktif açık artırmaların listelenmesi
-- Gerçek zamanlı geri sayım sayacı
+- Geri sayım sayacı
 - Ürün görselleri için carousel
 - Responsive tasarım
 
@@ -24,7 +24,7 @@ Bu proje, [auction-backend](https://github.com/EnginKisin/auction-backend) repos
 
 ### 🎯 Açık Artırma Sistemi
 - Detaylı açık artırma sayfaları
-- Gerçek zamanlı teklif verme
+- Teklif verme
 - Geri sayım sayacı ile süre takibi
 - Açık artırma durumu gösterimi
 - Teklif geçmişi
